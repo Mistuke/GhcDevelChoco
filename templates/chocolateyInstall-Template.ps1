@@ -32,8 +32,8 @@ Write-Host "Adding '$packageDir' to PATH..."
 Install-ChocolateyPath $packageDir
 
 # MSYS2 zips contain a root dir named msys32 or msys64
-$msysName = 'msys' + $osBitness
-$msysRoot = Join-Path $binRoot $msysName
+$msysName = 'ghc-devel-' + $arch
+$msysRoot = Join-Path $packageDir $msysName
  
 Write-Host "Installing to '$msysRoot'"
 Install-ChocolateyZipPackage $packageName $url $binRoot $url64 `
