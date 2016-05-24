@@ -9,7 +9,7 @@
  
 $ErrorActionPreference = 'Stop';
  
-$packageName = 'ghc-devel-$arch'
+$packageName = 'ghc-devel-' + $arch
 
 #$installDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
 ### For BinRoot, use the following instead ###
