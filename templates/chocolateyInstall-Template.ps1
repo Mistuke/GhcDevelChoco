@@ -10,6 +10,7 @@
 $ErrorActionPreference = 'Stop';
  
 $packageName = 'ghc-devel-' + $arch
+$osBitness   = Get-ProcessorBits
 
 #$installDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
 ### For BinRoot, use the following instead ###
