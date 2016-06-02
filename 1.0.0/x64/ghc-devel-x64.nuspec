@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+    <metadata>
+        <id>ghc-devel-x64</id>
+        <version>1.0.0</version>
+        <title>Cabal</title>
+        <authors>Cabal Team</authors>
+        <owners>Tamar Christina</owners>
+        <licenseUrl>https://github.com/Mistuke/GhcDevelChoco/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://ghc.haskell.org/trac/ghc/wiki/Building/Preparation/Windows</projectUrl>
+        <iconUrl>http://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Haskell-Logo.svg/2000px-Haskell-Logo.svg.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>This package installs and initializes an msys2 environment that has all the required features and tools to setup a
+        ghc development on Windows.</description>
+        <summary>Chocolatey sources for quick and easy setup of a GHC development environment required to build on Windows.</summary>
+        <releaseNotes>https://github.com/Mistuke/GhcDevelChoco/blob/master/README.md</releaseNotes>
+        <copyright>Copyright (c) 2016, Tamar Christina</copyright>
+        <tags>cabal ghc haskell ghc-devel</tags>
+        <docsUrl>https://github.com/Mistuke/GhcDevelChoco</docsUrl>
+        <bugTrackerUrl>https://github.com/Mistuke/GhcDevelChoco/issues</bugTrackerUrl>
+        <projectSourceUrl>https://github.com/Mistuke/GhcDevelChoco</projectSourceUrl>
+    </metadata>
+    <files>    
+        <file src="tools\**" target="tools" />
+        <file src="..\..\templates\**" target="tools" />
+        <file src="LICENSE.txt" target="LICENSE.txt" />
+    </files>
+</package>
