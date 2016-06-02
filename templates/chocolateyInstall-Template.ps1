@@ -117,32 +117,30 @@ execute "Copying GHC gdb configuration..." `
 Write-Host "Adding '$packageDir' to PATH..."
 Install-ChocolateyPath $packageDir
 
-$msg = @'
-***********************************************************************************************
-  
-  ...And we're done!
-  
-  
-  You can run this by running '$packageName.bat' after restarting powershell
-  or directly by launching the batch file directly.
-   
-  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources
-   
-  For information on how to fix bugs see https://ghc.haskell.org/trac/ghc/wiki/WorkingConventions/FixingBugs
-   
-  And for general beginners information consult https://ghc.haskell.org/trac/ghc/wiki/Newcomers
-   
-  If you want to submit back patches, you still have some work to do.
-  Please follow the guide at https://ghc.haskell.org/trac/ghc/wiki/Phabricator
-   
-  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6
-  and need to be in your PATH for arc to find it.
-   
-  For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building
-   
-   
-  Happy Hacking!
-***********************************************************************************************
-'@
 
-Write-Host ($msg | Out-String)
+Write-Host "***********************************************************************************************"
+Write-Host ""
+Write-Host "  ...And we're done!"
+Write-Host ""
+Write-Host ""
+Write-Host ("  You can run this by running '" + $packageName $ ".bat' after restarting powershell")
+Write-Host "  or directly by launching the batch file directly."
+Write-Host ""
+Write-Host "  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources"
+Write-Host ""
+Write-Host "  For information on how to fix bugs see https://ghc.haskell.org/trac/ghc/wiki/WorkingConventions/FixingBugs"
+Write-Host ""
+Write-Host "  And for general beginners information consult https://ghc.haskell.org/trac/ghc/wiki/Newcomers"
+Write-Host ""
+Write-Host "  If you want to submit back patches, you still have some work to do."
+Write-Host "  Please follow the guide at https://ghc.haskell.org/trac/ghc/wiki/Phabricator"
+Write-Host ""
+Write-Host "  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6"
+Write-Host "  and need to be in your PATH for arc to find it."
+Write-Host ""
+Write-Host "  For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building"
+Write-Host ""
+Write-Host ""
+Write-Host "  Happy Hacking!"
+Write-Host ""
+Write-Host "***********************************************************************************************"
