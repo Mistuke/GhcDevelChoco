@@ -50,7 +50,7 @@ Write-Host "Adding '$msysRoot' to PATH..."
 
 # Finally initialize and upgrade MSYS2 according to https://msys2.github.io
 Write-Host "Initializing MSYS2..."
-$Env:MSYSTEM=$("MINGW" + $osBitness)
+Set-Item Env:MSYSTEM ("MINGW" + $osBitness)
 $msysShell     = Join-Path $msysBase ('mingw' + $osBitness + '_shell.bat')
 $msysBashShell = Join-Path $msysBase ('usr\bin\bash')
 
@@ -60,22 +60,26 @@ Copy-Item $msysShell ($msysShell + ".bak")
 # Create some helper functions
 function execute {
     param( [string] $message
-         , [string] $command)
+         , [string] $command
+         )
     
     Write-Host "$message with '$command'..."
-    iex ("& " + $msysBashShell + " --login -c '$command'")
+    #Invoke-Expression ("& " + $msysBashShell + " --login -c '$command'")
+    $exec = [ScriptBlock]::Create(Invoke-Expression ("& " + $msysBashShell + " --login -c '$command'"))
+    $cmd  = (Invoke-Command -ScriptBlock $exec -ArgumentList $exec -ComputerName localhost -AsJob).Name
+    Wait-Job -Name $cmd
 }
 
 function rebase {
     if ($arch -eq 'x86') {
         $command = Join-Path $msysBase "autorebase.bat"
         Write-Host "Rebasing MSYS32 after update..."
-        Start-Process -NoNewWindow -Wait $command
+        Start-Process -WindowStyle Hidden -Wait $command
     }
 }
 
 Write-Host "Executing MSYS2 bash '$msysShell'..."
-Start-Process -Wait -NoNewWindow $msysShell -ArgumentList '-c', exit
+Start-Process -Wait -WindowStyle Hidden $msysShell -ArgumentList '-c', exit
 
 # Now perform commands to set up MSYS2 for GHC Developments
 execute "Updating system packages" `
@@ -109,11 +113,11 @@ $i = 0;
 foreach ($file in $files) {
   #generate an ignore file
   New-Item "$file.ignore" -type file -force | Out-Null
-  Write-Progress -activity Updating -status 'Progress->' -percentcomplete ($i++/$files.length) -currentOperation $file
+  Write-Progress -activity "Processing executables" -status "Hiding: " -percentcomplete ($i++/$files.length) -currentOperation $file
 }
 
 # Create files to access msys
-Move-Item ($msysShell + ".bak") (Join-Path $packageDir (packageName + ".bat"))
+Move-Item ($msysShell + ".bak") (Join-Path $packageDir ($packageName + ".bat"))
 
 Write-Host "Adding '$packageDir' to PATH..."
 #Install-ChocolateyPath $packageDir
