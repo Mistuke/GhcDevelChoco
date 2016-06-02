@@ -47,7 +47,7 @@ Write-Host "Adding '$msysRoot' to PATH..."
 # Finally initialize and upgrade MSYS2 according to https://msys2.github.io
 Write-Host "Initializing MSYS2..."
 Set-Item Env:MSYSTEM ("MINGW" + $osBitness)
-$msysShell     = Join-Path $msysBase ('msys2_shell.cmd')
+$msysShell     = Join-Path (Join-Path $msysName ("msys" + $osBitness)) ('msys2_shell.cmd')
 $msysBashShell = Join-Path $msysBase ('usr\bin\bash')
 
 # Create some helper functions
@@ -72,7 +72,7 @@ execute "Processing MSYS2 bash for first time use" `
         "exit"
 
 execute "Appending .profile with path information" `
-        ("echo `'export PATH=/mingw$(osBitness)/bin:`$PATH`' >>~/.bash_profile")
+        ("echo ^`'export PATH=/mingw" + $osBitness + "/bin:`$PATH^`' >>~/.bash_profile")
 
 # Now perform commands to set up MSYS2 for GHC Developments
 execute "Updating system packages" `
@@ -109,7 +109,7 @@ foreach ($file in $files) {
 # Create files to access msys
 Write-Host "Creating msys2 wrapper..."
 $cmd = "$msysShell -mingw" + $osBitness
-echo "$cmd" | Out-File (Join-Path $packageDir ($packageName + ".bat"))
+echo "$cmd" | Out-File -Encoding ascii (Join-Path $packageDir ($packageName + ".bat"))
 
 execute "Copying GHC gdb configuration..." `
         ('cp "' + (Join-Path $toolsDir ".gdbinit") + '" ~/.gdbinit')
@@ -118,22 +118,31 @@ Write-Host "Adding '$packageDir' to PATH..."
 Install-ChocolateyPath $packageDir
 
 Write-Host @'
+***********************************************************************************************
 And We're done!
 
-You can run this by running `'$(packageName).bat`' after restarting powershell
+
+You can run this by running `'$packageName.bat`' after restarting powershell
 or directly by launching the batch file directly.
+
 
 For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources
 
+
 For information on how to fix bugs see https://ghc.haskell.org/trac/ghc/wiki/WorkingConventions/FixingBugs
 
+
 And for general beginners information consult https://ghc.haskell.org/trac/ghc/wiki/Newcomers
+
 
 If you want to submit back patches, you still have some work to do.
 Please follow the guide at https://ghc.haskell.org/trac/ghc/wiki/Phabricator
 
+
 For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6
 and need to be in your PATH for arc to find it.
 
+
 For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building
+***********************************************************************************************
 '@
