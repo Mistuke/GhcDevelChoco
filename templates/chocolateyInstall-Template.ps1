@@ -7,14 +7,10 @@
 $ErrorActionPreference = 'Stop';
  
 $packageName = 'ghc-devel-' + $arch
-$osBitness   = Get-ProcessorBits
-
-#$installDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-### For BinRoot, use the following instead ###
  
 $toolsDir        = Split-Path -parent $MyInvocation.MyCommand.Definition
 $packageFullName = $packageName + '-' + $version
-$packageDir      = Join-Path ".." $toolsDir
+$packageDir      = Join-Path $toolsDir ".."
 
 if ($arch -eq 'x86') {
     $url           = 'http://repo.msys2.org/distrib/i686/msys2-base-i686-20160205.tar.xz'
@@ -29,7 +25,7 @@ if ($arch -eq 'x86') {
 }
 
 # MSYS2 zips contain a root dir named msys32 or msys64
-$msysName = 'msys2'
+$msysName = '.' #shorten the path by exporting to the same folder
 $msysRoot = Join-Path $packageDir $msysName
 $msysBase = Join-Path $msysRoot ("msys" + $osBitness)
  
@@ -51,11 +47,8 @@ Write-Host "Adding '$msysRoot' to PATH..."
 # Finally initialize and upgrade MSYS2 according to https://msys2.github.io
 Write-Host "Initializing MSYS2..."
 Set-Item Env:MSYSTEM ("MINGW" + $osBitness)
-$msysShell     = Join-Path $msysBase ('mingw' + $osBitness + '_shell.bat')
+$msysShell     = Join-Path $msysBase ('msys2_shell.cmd')
 $msysBashShell = Join-Path $msysBase ('usr\bin\bash')
-
-# Make a backup
-Copy-Item $msysShell ($msysShell + ".bak")
 
 # Create some helper functions
 function execute {
@@ -78,6 +71,9 @@ function rebase {
 execute "Processing MSYS2 bash for first time use" `
         "exit"
 
+execute "Appending .profile with path information" `
+        ("echo `'export PATH=/mingw$(osBitness)/bin:`$PATH`' >>~/.bash_profile")
+
 # Now perform commands to set up MSYS2 for GHC Developments
 execute "Updating system packages" `
         "pacman --noconfirm --needed -Sy bash pacman pacman-mirrors msys2-runtime"
@@ -98,10 +94,7 @@ execute "Installing bootstrapping GHC 7.10.3 version" `
         ('curl -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-i386-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
 
 execute "Installing alex, happy and cabal" `
-        ('mkdir -p /usr/local/bin && curl -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && cabal update && cabal install -j --prefix=/usr/local alex happy')
-
-execute "Appending .profile with path information" `
-        ("echo `'export PATH=/mingw" + $osBitness + ":`$PATH`' >>~/.bash_profile")
+        ('mkdir -p /usr/local/bin && curl -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
 
 # ignore shims for MSYS2 programs directly
 $files = get-childitem $installDir -include *.exe, *.bat, *.com -recurse
@@ -114,7 +107,33 @@ foreach ($file in $files) {
 }
 
 # Create files to access msys
-Move-Item ($msysShell + ".bak") (Join-Path $packageDir ($packageName + ".bat"))
+Write-Host "Creating msys2 wrapper..."
+$cmd = "$msysShell -mingw" + $osBitness
+echo "$cmd" | Out-File (Join-Path $packageDir ($packageName + ".bat"))
+
+execute "Copying GHC gdb configuration..." `
+        ('cp "' + (Join-Path $toolsDir ".gdbinit") + '" ~/.gdbinit')
 
 Write-Host "Adding '$packageDir' to PATH..."
-#Install-ChocolateyPath $packageDir
+Install-ChocolateyPath $packageDir
+
+Write-Host @'
+And We're done!
+
+You can run this by running `'$(packageName).bat`' after restarting powershell
+or directly by launching the batch file directly.
+
+For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources
+
+For information on how to fix bugs see https://ghc.haskell.org/trac/ghc/wiki/WorkingConventions/FixingBugs
+
+And for general beginners information consult https://ghc.haskell.org/trac/ghc/wiki/Newcomers
+
+If you want to submit back patches, you still have some work to do.
+Please follow the guide at https://ghc.haskell.org/trac/ghc/wiki/Phabricator
+
+For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6
+and need to be in your PATH for arc to find it.
+
+For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building
+'@
