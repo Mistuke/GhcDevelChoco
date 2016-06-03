@@ -118,7 +118,7 @@ if ($useHadrian -eq $true) {
     Write-Host "Setting up Hadrian as requested."
 
     execute "Fetching sources..." `
-            "cd ghc && git clone git://github.com/snowleopard/hadrian && cabal install"
+            "cd ghc && git clone git://github.com/snowleopard/hadrian && cd hadrian && cabal install"
 }
 
 Write-Host "Preventing Chocolatey shims..."
