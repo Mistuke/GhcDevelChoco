@@ -130,29 +130,29 @@ execute "Appending profile with path information" `
         ('echo "export PATH=/mingw' + $osBitness + '/bin:\$PATH" >>~/.bash_profile')
 
 # Now perform commands to set up MSYS2 for GHC Developments
-# execute "Updating system packages" `
-        # "pacman --noconfirm --needed -Sy bash pacman pacman-mirrors msys2-runtime"
-# rebase
-# execute "Upgrading full system" `
-        # "pacman --noconfirm -Su"
-# rebase
-# execute "Installing GHC Build Dependencies" `
-        # "pacman --noconfirm -S --needed git tar binutils autoconf make libtool automake python python2 p7zip patch unzip mingw-w64-`$(uname -m)-gcc mingw-w64-`$(uname -m)-gdb mingw-w64-`$(uname -m)-python3-sphinx"
+execute "Updating system packages" `
+        "pacman --noconfirm --needed -Sy bash pacman pacman-mirrors msys2-runtime"
+rebase
+execute "Upgrading full system" `
+        "pacman --noconfirm -Su"
+rebase
+execute "Installing GHC Build Dependencies" `
+        "pacman --noconfirm -S --needed git tar binutils autoconf make libtool automake python python2 p7zip patch unzip mingw-w64-`$(uname -m)-gcc mingw-w64-`$(uname -m)-gdb mingw-w64-`$(uname -m)-python3-sphinx"
 
-# execute "Updating SSL root certificate authorities" `
-        # "pacman --noconfirm -S --needed ca-certificates"
+execute "Updating SSL root certificate authorities" `
+        "pacman --noconfirm -S --needed ca-certificates"
 
-# execute "Ensuring /mingw folder exists" `
-        # ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
+execute "Ensuring /mingw folder exists" `
+        ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
 
-# execute "Installing bootstrapping GHC 7.10.3 version" `
-        # ('curl --stderr - -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
+execute "Installing bootstrapping GHC 7.10.3 version" `
+        ('curl --stderr - -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
 
-# execute "Installing alex, happy and cabal" `
-        # ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
+execute "Installing alex, happy and cabal" `
+        ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
 
-# execute "Re-installing HsColour" `
-        # 'cabal install -j --prefix=/usr/local HsColour --reinstall'
+execute "Re-installing HsColour" `
+        'cabal install -j --prefix=/usr/local HsColour --reinstall'
 
 # Create files to access msys
 Write-Host "Creating msys2 wrapper..."
