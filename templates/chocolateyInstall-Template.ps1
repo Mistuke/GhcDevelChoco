@@ -30,7 +30,53 @@ if ($arch -eq 'x86') {
 $msysName = '.' #shorten the path by exporting to the same folder
 $msysRoot = Join-Path $packageDir $msysName
 $msysBase = Join-Path $msysRoot ("msys" + $osBitness)
- 
+
+# Prepare the package parameters
+$arguments = @{}
+
+# Let's assume that the input string is something like this, and we will use a Regular Expression to parse the values
+# /arc /ssh
+
+# Now we can use the $env:chocolateyPackageParameters inside the Chocolatey package
+$packageParameters = $env:chocolateyPackageParameters
+
+# Default the values
+$useArc = $false
+$useSsh = $false
+
+# Now parse the packageParameters using good old regular expression
+if ($packageParameters) {
+  $match_pattern = "\/(?<option>([a-zA-Z]+)):(?<value>([`"'])?([a-zA-Z0-9- _\\:\.]+)([`"'])?)|\/(?<option>([a-zA-Z]+))" #" Notepad++ is confused, so fix the highlighting with this hack
+  $option_name   = 'option'
+  $value_name    = 'value'
+
+  if ($packageParameters -match $match_pattern ){
+      $results = $packageParameters | Select-String $match_pattern -AllMatches
+      $results.matches | % {
+        $arguments.Add(
+            $_.Groups[$option_name].Value.Trim(),
+            $_.Groups[$value_name].Value.Trim())
+    }
+  }
+  else
+  {
+      Throw "Package Parameters were found but were invalid (REGEX Failure)"
+  }
+
+  if ($arguments.ContainsKey("arc")) {
+      Write-Host "Okay, I will also install and configure arcanist."
+      $useArc = $true
+  }
+
+  if ($arguments.ContainsKey("ssh")) {
+      Write-Host "Okay, I will also install and configure an SSH daemon"
+      $useSsh = $true
+  }
+} else {
+  Write-Debug "No Package Parameters Passed in"
+}
+
+# Continue with package 
 Write-Host "Installing to '$packageDir'"
 Install-ChocolateyZipPackage $packageName $url $packageDir `
   -checksum $checksum -checksumType $checksumType
@@ -77,34 +123,57 @@ function rebase {
 execute "Processing MSYS2 bash for first time use" `
         "exit"
 
-execute "Appending .profile with path information" `
+execute "Appending profile with path information" `
         ('echo "export PATH=/mingw' + $osBitness + '/bin:\$PATH" >>~/.bash_profile')
 
 # Now perform commands to set up MSYS2 for GHC Developments
-execute "Updating system packages" `
-        "pacman --noconfirm --needed -Sy bash pacman pacman-mirrors msys2-runtime"
-rebase
-execute "Upgrading full system" `
-        "pacman --noconfirm -Su"
-rebase
-execute "Installing GHC Build Dependencies" `
-        "pacman --noconfirm -S --needed git tar binutils autoconf make libtool automake python python2 p7zip patch unzip mingw-w64-`$(uname -m)-gcc mingw-w64-`$(uname -m)-gdb mingw-w64-`$(uname -m)-python3-sphinx"
+# execute "Updating system packages" `
+        # "pacman --noconfirm --needed -Sy bash pacman pacman-mirrors msys2-runtime"
+# rebase
+# execute "Upgrading full system" `
+        # "pacman --noconfirm -Su"
+# rebase
+# execute "Installing GHC Build Dependencies" `
+        # "pacman --noconfirm -S --needed git tar binutils autoconf make libtool automake python python2 p7zip patch unzip mingw-w64-`$(uname -m)-gcc mingw-w64-`$(uname -m)-gdb mingw-w64-`$(uname -m)-python3-sphinx"
 
-execute "Updating SSL root certificate authorities" `
-        "pacman --noconfirm -S --needed ca-certificates"
+# execute "Updating SSL root certificate authorities" `
+        # "pacman --noconfirm -S --needed ca-certificates"
 
-execute "Ensuring /mingw folder exists" `
-        ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
+# execute "Ensuring /mingw folder exists" `
+        # ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
 
-execute "Installing bootstrapping GHC 7.10.3 version" `
-        ('curl --stderr - -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
+# execute "Installing bootstrapping GHC 7.10.3 version" `
+        # ('curl --stderr - -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
 
-execute "Installing alex, happy and cabal" `
-        ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
+# execute "Installing alex, happy and cabal" `
+        # ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
 
-execute "Re-installing HsColour" `
-        'cabal install -j --prefix=/usr/local HsColour --reinstall'
+# execute "Re-installing HsColour" `
+        # 'cabal install -j --prefix=/usr/local HsColour --reinstall'
 
+# Create files to access msys
+Write-Host "Creating msys2 wrapper..."
+$cmd = "@echo off`r`npushd %~dp0`r`n$msysShell -mingw" + $osBitness
+echo "$cmd" | Out-File -Encoding ascii (Join-Path $packageDir ($packageName + ".cmd"))
+
+execute "Copying GHC gdb configuration..." `
+        ('cp "' + (Join-Path $toolsDir ".gdbinit") + '" ~/.gdbinit')
+        
+if ($useArc -eq $true) {
+    execute "Installing php" `
+            'mkdir -p /usr/local/bin && curl --stderr - -LO http://windows.php.net/downloads/releases/php-5.6.22-Win32-VC11-x86.zip && unzip php-5.6.22-Win32-VC11-x86.zip -d /usr/local/bin && rm -f php-5.6.22-Win32-VC11-x86.zip'
+            
+    execute "Cloning arcanist" `
+            "git clone https://github.com/phacility/libphutil.git && git clone https://github.com/phacility/arcanist.git"
+            
+    execute "Adding arcanist to path information" `
+            ('echo "export PATH=$(pwd)/arcanist/bin:\$PATH" >>~/.bash_profile')
+}
+
+if ($useSsh -eq $true) {
+}
+
+Write-Host "Preventing Chocolatey shims..."
 # ignore shims for MSYS2 programs directly
 $files = get-childitem $installDir -include *.exe, *.bat, *.com -recurse
 $i = 0;
@@ -115,14 +184,6 @@ foreach ($file in $files) {
   Write-Progress -activity "Processing executables" -status "Hiding: " -percentcomplete ($i++/$files.length) -currentOperation $file
 }
 
-# Create files to access msys
-Write-Host "Creating msys2 wrapper..."
-$cmd = "@echo off`r`npushd %~dp0`r`n$msysShell -mingw" + $osBitness
-echo "$cmd" | Out-File -Encoding ascii (Join-Path $packageDir ($packageName + ".bat"))
-
-execute "Copying GHC gdb configuration..." `
-        ('cp "' + (Join-Path $toolsDir ".gdbinit") + '" ~/.gdbinit')
-
 Write-Host "Adding '$packageDir' to PATH..."
 Install-ChocolateyPath $packageDir
 
@@ -132,7 +193,7 @@ Write-Output "*  ...And we're done!"
 Write-Output "*"
 Write-Output "*"
 Write-Output ("*  You can run this by running '" + $packageName + ".bat' after restarting powershell")
-Write-Output "*  or by launching the batch file directly."
+Write-Output "*  or by launching the batch file directly."`
 Write-Output "*"
 Write-Output "*  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources"
 Write-Output "*"
@@ -143,8 +204,14 @@ Write-Output "*"
 Write-Output "*  If you want to submit back patches, you still have some work to do."
 Write-Output "*  Please follow the guide at https://ghc.haskell.org/trac/ghc/wiki/Phabricator"
 Write-Output "*"
-Write-Output "*  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6"
-Write-Output "*  and need to be in your PATH for arc to find it."
+if ($useArc -eq $false) {
+    Write-Output "*  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6"
+    Write-Output "*  and need to be in your PATH for arc to find it."
+} else {
+    Write-Output "*  arc has been installed. Once you check out the ghc code, perform the following commands to finish the install:"
+    Write-Output "*  cd ~/code/ghc-head"
+    Write-Output "*  arc install-certificate"
+}
 Write-Output "*"
 Write-Output "*  For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building"
 Write-Output "*"
