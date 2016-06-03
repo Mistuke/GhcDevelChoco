@@ -114,7 +114,7 @@ foreach ($file in $files) {
 
 # Create files to access msys
 Write-Host "Creating msys2 wrapper..."
-$cmd = "$msysShell -mingw" + $osBitness
+$cmd = "@echo off`r`npushd %~dp0`r`n$msysShell -mingw" + $osBitness
 echo "$cmd" | Out-File -Encoding ascii (Join-Path $packageDir ($packageName + ".bat"))
 
 execute "Copying GHC gdb configuration..." `
