@@ -102,6 +102,9 @@ execute "Installing bootstrapping GHC 7.10.3 version" `
 execute "Installing alex, happy and cabal" `
         ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
 
+execute "Re-installing HsColour" `
+        'cabal install -j --prefix=/usr/local HsColour --reinstall'
+
 # ignore shims for MSYS2 programs directly
 $files = get-childitem $installDir -include *.exe, *.bat, *.com -recurse
 $i = 0;
@@ -129,7 +132,7 @@ Write-Output "*  ...And we're done!"
 Write-Output "*"
 Write-Output "*"
 Write-Output ("*  You can run this by running '" + $packageName + ".bat' after restarting powershell")
-Write-Output "*  or directly by launching the batch file directly."
+Write-Output "*  or by launching the batch file directly."
 Write-Output "*"
 Write-Output "*  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources"
 Write-Output "*"
