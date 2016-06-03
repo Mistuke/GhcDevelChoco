@@ -155,12 +155,30 @@ Write-Output "*"
 if ($useArc -eq $false) {
     Write-Output "*  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6"
     Write-Output "*  and need to be in your PATH for arc to find it."
+    Write-Output "*"
 } elseif ($getSource -eq $false) {
     Write-Output "*  arc has been installed. Once you check out the ghc code, perform the following commands to finish the install:"
     Write-Output "*  cd ~/code/ghc-head"
     Write-Output "*  arc install-certificate"
+    Write-Output "*"
 }
-Write-Output "*"
+if ($useSsh -eq $true) {
+    $hostname=hostname
+    Write-Output ("*  SSH has been installed and configured to run on PORT " + $SSH_PORT + ".")
+    Write-Output ("*  For reference. This computer is named " + $hostname + ".")
+    Write-Output "*"
+}
+if ($getSource -eq $true) {
+    Write-Output "*  A checkout of the GHC sources has been made in ~/ghc."
+    Write-Output "*"
+}
+if ($useHadrian -eq $true) {
+    Write-Output "*  Hadrian has been installed and configured in ~/ghc."
+    Write-Output "*  This means you can now use shake to build GHC."
+    Write-Output "*  See https://github.com/snowleopard/hadrian for instructions."
+    Write-Output "*"
+}
+
 Write-Output "*  For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building"
 Write-Output "*"
 Write-Output "*"
