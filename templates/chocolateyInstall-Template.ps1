@@ -43,9 +43,6 @@ if (Test-Path $tarFile) {
     Remove-Item $tarFile
 }
 
-Write-Host "Adding '$msysRoot' to PATH..."
-# Install-ChocolateyPath $msysRoot
-
 # Finally initialize and upgrade MSYS2 according to https://msys2.github.io
 Write-Host "Initializing MSYS2..."
 Set-Item Env:MSYSTEM ("MINGW" + $osBitness)
@@ -93,10 +90,10 @@ execute "Ensuring /mingw folder exists" `
         ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
 
 execute "Installing bootstrapping GHC 7.10.3 version" `
-        ('curl -# -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
+        ('curl -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
 
 execute "Installing alex, happy and cabal" `
-        ('mkdir -p /usr/local/bin && curl -# -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
+        ('mkdir -p /usr/local/bin && curl -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
 
 # ignore shims for MSYS2 programs directly
 $files = get-childitem $installDir -include *.exe, *.bat, *.com -recurse
@@ -119,30 +116,29 @@ execute "Copying GHC gdb configuration..." `
 Write-Host "Adding '$packageDir' to PATH..."
 Install-ChocolateyPath $packageDir
 
-
 Write-Output "***********************************************************************************************"
-Write-Output "`r`n"
-Write-Output "  ...And we're done!"
-Write-Output "`r`n"
-Write-Output "`r`n"
-Write-Output ("  You can run this by running '" + $packageName + ".bat' after restarting powershell")
-Write-Output "  or directly by launching the batch file directly."
-Write-Output "`r`n"
-Write-Output "  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources"
-Write-Output "`r`n"
-Write-Output "  For information on how to fix bugs see https://ghc.haskell.org/trac/ghc/wiki/WorkingConventions/FixingBugs"
-Write-Output "`r`n"
-Write-Output "  And for general beginners information consult https://ghc.haskell.org/trac/ghc/wiki/Newcomers"
-Write-Output "`r`n"
-Write-Output "  If you want to submit back patches, you still have some work to do."
-Write-Output "  Please follow the guide at https://ghc.haskell.org/trac/ghc/wiki/Phabricator"
-Write-Output "`r`n"
-Write-Output "  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6"
-Write-Output "  and need to be in your PATH for arc to find it."
-Write-Output "`r`n"
-Write-Output "  For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building"
-Write-Output "`r`n"
-Write-Output "`r`n"
-Write-Output "  Happy Hacking!"
-Write-Output "`r`n"
+Write-Output "*"
+Write-Output "*  ...And we're done!"
+Write-Output "*"
+Write-Output "*"
+Write-Output ("*  You can run this by running '" + $packageName + ".bat' after restarting powershell")
+Write-Output "*  or directly by launching the batch file directly."
+Write-Output "*"
+Write-Output "*  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources"
+Write-Output "*"
+Write-Output "*  For information on how to fix bugs see https://ghc.haskell.org/trac/ghc/wiki/WorkingConventions/FixingBugs"
+Write-Output "*"
+Write-Output "*  And for general beginners information consult https://ghc.haskell.org/trac/ghc/wiki/Newcomers"
+Write-Output "*"
+Write-Output "*  If you want to submit back patches, you still have some work to do."
+Write-Output "*  Please follow the guide at https://ghc.haskell.org/trac/ghc/wiki/Phabricator"
+Write-Output "*"
+Write-Output "*  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6"
+Write-Output "*  and need to be in your PATH for arc to find it."
+Write-Output "*"
+Write-Output "*  For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building"
+Write-Output "*"
+Write-Output "*"
+Write-Output "*  Happy Hacking!"
+Write-Output "*"
 Write-Output "***********************************************************************************************"
