@@ -35,7 +35,7 @@ This package does however support automatically configuring arcanist and an ssh 
 #### Package Parameters
 The following package parameters can be set:
 
- * `/arc` - this will configure the phabricator tool `arc` for use. This is not done by default.
+ * `/arc` - this will configure the phabricator tool `arc` for use. This is done by default if no params are specified.
  * `/ssh` - this installs and configures an ssh server for use with this environment, this services will be started automatically by Windows. This is not enabled by default.
 
 These parameters can be passed to the installer with the use of `-params`.

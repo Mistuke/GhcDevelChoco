@@ -41,7 +41,7 @@ $arguments = @{}
 $packageParameters = $env:chocolateyPackageParameters
 
 # Default the values
-$useArc = $false
+$useArc = $true
 $useSsh = $false
 
 # Now parse the packageParameters using good old regular expression
@@ -62,6 +62,9 @@ if ($packageParameters) {
   {
       Throw "Package Parameters were found but were invalid (REGEX Failure)"
   }
+
+  # Turn off things that are only off when there are no other options specified
+  $useArc = $false
 
   if ($arguments.ContainsKey("arc")) {
       Write-Host "Okay, I will also install and configure arcanist."
