@@ -84,7 +84,32 @@ if ($useArc -eq $true) {
             "git clone https://github.com/phacility/libphutil.git && git clone https://github.com/phacility/arcanist.git"
 
     execute "Adding arcanist to path information" `
-            ('echo "export PATH=$(pwd)/arcanist/bin:\$PATH" >>~/.bash_profile')
+            'echo "export PATH=$(pwd)/arcanist/bin:\$PATH" >>~/.bash_profile'
+            
+    execute "Copying PHP configuration..." `
+            ('cp "' + (Join-Path $toolsDir "php.ini") + '" /usr/local/bin/php.ini')
+}
+
+# Get the GHC sources
+if ($getSource -eq $true) {
+    Write-Host "Getting a checkout of GHC for your coding pleasure..."
+
+    execute "Fetching sources..." `
+            "git clone --recursive git://git.haskell.org/ghc.git" 
+
+    # Configure Arcanist if it was installed
+    if ($useArc -eq $true) {
+        execute "Initializing arc..." `
+                "cd ghc && arc install-certificate"
+    }
+}
+
+# Install Hadrian
+if ($useHadrian -eq $true) {
+    Write-Host "Setting up Hadrian as requested."
+
+    execute "Fetching sources..." `
+            "cd ghc && git clone git://github.com/snowleopard/hadrian && cd hadrian && cabal install"
 }
 
 # Install SSHd 
@@ -100,25 +125,6 @@ if ($useSsh -eq $true) {
     # Open firewall port
     Write-Host "Opening firewall for SSHd access"
     netsh advfirewall firewall add rule name='MSYS2 SSHd' dir=in action=allow protocol=TCP localport=$SSH_PORT
-}
-
-if ($getSource -eq $true) {
-    Write-Host "Getting a checkout of GHC for your coding pleasure..."
-
-    execute "Fetching sources..." `
-            "git clone --recursive git://git.haskell.org/ghc.git" 
-
-    if ($useArc -eq $true) {
-        execute "Initializing arc..." `
-                "cd ghc && arc install-certificate"
-    }
-}
-
-if ($useHadrian -eq $true) {
-    Write-Host "Setting up Hadrian as requested."
-
-    execute "Fetching sources..." `
-            "cd ghc && git clone git://github.com/snowleopard/hadrian && cd hadrian && cabal install"
 }
 
 Write-Host "Preventing Chocolatey shims..."

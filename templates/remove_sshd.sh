@@ -22,7 +22,7 @@ set -e
 # Configuration
 #
 
-if [ -e ~/.sshd_installed ] then
+if [ -f ~/.sshd_installed ] then
     echo "SSHd installation found. Removing.."
     # Stop and unregister service with cygrunsrv
 
@@ -30,7 +30,7 @@ if [ -e ~/.sshd_installed ] then
     cygrunsrv --stop sshd
     cygrunsrv --remove sshd
 
-    # Delete any sshd or related users (such as cyg_server) from the system
+    # Delete any sshd or related users (such as sshd_server) from the system
     net user sshd /delete
-    net user cyg_server /delete
+    net user sshd_server /delete
 fi

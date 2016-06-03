@@ -1,9 +1,8 @@
-﻿try {
-
-# Include the shared scripts
+﻿# Include the shared scripts
 $thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 . ($thisScript +  '.\chocolateyShared-Template.ps1')
 
+Write-Host "Checking if we installed an SSHd service"
 $SSHServiceInstanceExistsAndIsOurs = ([bool]((Get-WmiObject win32_service | ?{$_.Name -ilike 'sshd'} | select -expand PathName) -ilike "*$msysBase*"))
 
 if ($SSHServiceInstanceExistsAndIsOurs -eq $true) {
@@ -21,7 +20,3 @@ if ($SSHServiceInstanceExistsAndIsOurs -eq $true) {
 Write-Host "Removing MSYS2 installation..."
 
 Remove-Item -r -fo $msysBase
-
-} catch {
-  throw $_.Exception
-}
