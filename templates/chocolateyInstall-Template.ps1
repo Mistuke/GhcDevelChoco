@@ -53,10 +53,17 @@ $msysBashShell = Join-Path $msysBase ('usr\bin\bash')
 function execute {
     param( [string] $message
          , [string] $command
+         , [bool] $ignoreExitCode = $false
          )
     
+    # NOTE: For now, we have to redirect or silence stderr due to
+    # https://github.com/chocolatey/choco/issues/445 
+    # Instead just check the exit code
     Write-Host "$message with '$command'..."    
-    Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$command'"
+    $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$command'" -RedirectStandardError nul -PassThru
+    if ((-not $ignoreExitCode) -and ($proc.ExitCode -ne 0)) {
+        throw ("Command '$command' did not complete successfully. ExitCode: " + $proc.ExitCode)
+    }
 }
 
 function rebase {

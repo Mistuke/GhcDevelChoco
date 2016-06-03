@@ -3,8 +3,8 @@
     <metadata>
         <id>ghc-devel-x64</id>
         <version>1.0.0</version>
-        <title>Cabal</title>
-        <authors>Cabal Team</authors>
+        <title>GHC 64bit development environment</title>
+        <authors>Tamar Christina</authors>
         <owners>Tamar Christina</owners>
         <licenseUrl>https://github.com/Mistuke/GhcDevelChoco/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://ghc.haskell.org/trac/ghc/wiki/Building/Preparation/Windows</projectUrl>
