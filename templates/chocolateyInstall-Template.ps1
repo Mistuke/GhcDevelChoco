@@ -3,80 +3,19 @@
 # Licensed under the MIT License
 # 
 # Copyright (C) 2016 Tamar Christina <tamar@zhox.com>
- 
-$ErrorActionPreference = 'Stop';
- 
-$packageName = 'ghc-devel-' + $arch
- 
-$toolsDir        = Split-Path -parent $MyInvocation.MyCommand.Definition
-$packageFullName = $packageName + '-' + $version
-$packageDir      = Join-Path $toolsDir ".."
+
+# Include the shared scripts
+$thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+. ($thisScript +  '.\chocolateyShared-Template.ps1')
 
 if ($arch -eq 'x86') {
     $url           = 'http://repo.msys2.org/distrib/i686/msys2-base-i686-20160205.tar.xz'
     $checksum      = '2AA85B8995C8AB6FB080E15C8ED8B1195D7FC0F1'
     $checksumType  = 'SHA1'
-    $osBitness     = 32
-    $ghcArch       = "i386"
 } else {
     $url           = 'http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20160205.tar.xz'
     $checksum      = 'BD689438E6389064C0B22F814764524BB974AE5B'
     $checksumType  = 'SHA1'
-    $osBitness     = 64
-    $ghcArch       = "x86_64"
-}
-
-# MSYS2 zips contain a root dir named msys32 or msys64
-$msysName = '.' #shorten the path by exporting to the same folder
-$msysRoot = Join-Path $packageDir $msysName
-$msysBase = Join-Path $msysRoot ("msys" + $osBitness)
-
-# Prepare the package parameters
-$arguments = @{}
-
-# Let's assume that the input string is something like this, and we will use a Regular Expression to parse the values
-# /arc /ssh
-
-# Now we can use the $env:chocolateyPackageParameters inside the Chocolatey package
-$packageParameters = $env:chocolateyPackageParameters
-
-# Default the values
-$useArc = $true
-$useSsh = $false
-
-# Now parse the packageParameters using good old regular expression
-if ($packageParameters) {
-  $match_pattern = "\/(?<option>([a-zA-Z]+)):(?<value>([`"'])?([a-zA-Z0-9- _\\:\.]+)([`"'])?)|\/(?<option>([a-zA-Z]+))" #" Notepad++ is confused, so fix the highlighting with this hack
-  $option_name   = 'option'
-  $value_name    = 'value'
-
-  if ($packageParameters -match $match_pattern ){
-      $results = $packageParameters | Select-String $match_pattern -AllMatches
-      $results.matches | % {
-        $arguments.Add(
-            $_.Groups[$option_name].Value.Trim(),
-            $_.Groups[$value_name].Value.Trim())
-    }
-  }
-  else
-  {
-      Throw "Package Parameters were found but were invalid (REGEX Failure)"
-  }
-
-  # Turn off things that are only off when there are no other options specified
-  $useArc = $false
-
-  if ($arguments.ContainsKey("arc")) {
-      Write-Host "Okay, I will also install and configure arcanist."
-      $useArc = $true
-  }
-
-  if ($arguments.ContainsKey("ssh")) {
-      Write-Host "Okay, I will also install and configure an SSH daemon"
-      $useSsh = $true
-  }
-} else {
-  Write-Debug "No Package Parameters Passed in"
 }
 
 # Continue with package 
@@ -94,34 +33,6 @@ if (Test-Path $tarFile) {
 
 # Finally initialize and upgrade MSYS2 according to https://msys2.github.io
 Write-Host "Initializing MSYS2..."
-Set-Item Env:MSYSTEM ("MINGW" + $osBitness)
-$msysShell     = Join-Path (Join-Path $msysName ("msys" + $osBitness)) ('msys2_shell.cmd')
-$msysBashShell = Join-Path $msysBase ('usr\bin\bash')
-
-# Create some helper functions
-function execute {
-    param( [string] $message
-         , [string] $command
-         , [bool] $ignoreExitCode = $false
-         )
-    
-    # NOTE: For now, we have to redirect or silence stderr due to
-    # https://github.com/chocolatey/choco/issues/445 
-    # Instead just check the exit code
-    Write-Host "$message with '$command'..."    
-    $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$command'" -RedirectStandardError nul -PassThru
-    if ((-not $ignoreExitCode) -and ($proc.ExitCode -ne 0)) {
-        throw ("Command '$command' did not complete successfully. ExitCode: " + $proc.ExitCode)
-    }
-}
-
-function rebase {
-    if ($arch -eq 'x86') {
-        $command = Join-Path $msysBase "autorebase.bat"
-        Write-Host "Rebasing MSYS32 after update..."
-        Start-Process -WindowStyle Hidden -Wait $command
-    }
-}
 
 execute "Processing MSYS2 bash for first time use" `
         "exit"
@@ -146,7 +57,7 @@ execute "Ensuring /mingw folder exists" `
         ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
 
 execute "Installing bootstrapping GHC 7.10.3 version" `
-        ('curl --stderr - -L https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz | tar -xJ -C /mingw' + $osBitness + ' --strip-components=1')
+        ('curl --stderr - -LO https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz && tar -xJ -C /mingw' + $osBitness + ' --strip-components=1 -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz && rm -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz')
 
 execute "Installing alex, happy and cabal" `
         ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
@@ -161,19 +72,53 @@ echo "$cmd" | Out-File -Encoding ascii (Join-Path $packageDir ($packageName + ".
 
 execute "Copying GHC gdb configuration..." `
         ('cp "' + (Join-Path $toolsDir ".gdbinit") + '" ~/.gdbinit')
-        
+
+# Install Arcanist   
 if ($useArc -eq $true) {
+    Write-Host "Setting up Arcanist as requested."
+
     execute "Installing php" `
             'mkdir -p /usr/local/bin && curl --stderr - -LO http://windows.php.net/downloads/releases/php-5.6.22-Win32-VC11-x86.zip && unzip php-5.6.22-Win32-VC11-x86.zip -d /usr/local/bin && rm -f php-5.6.22-Win32-VC11-x86.zip'
-            
+
     execute "Cloning arcanist" `
             "git clone https://github.com/phacility/libphutil.git && git clone https://github.com/phacility/arcanist.git"
-            
+
     execute "Adding arcanist to path information" `
             ('echo "export PATH=$(pwd)/arcanist/bin:\$PATH" >>~/.bash_profile')
 }
 
+# Install SSHd 
 if ($useSsh -eq $true) {
+    Write-Host "Setting up SSH as requested."
+
+    execute "Installing SSHd dependencies" `
+            "pacman --noconfirm -S --needed openssh cygrunsrv mingw-w64-x86_64-editrights"
+
+    execute "Configuring SSHd..." `
+        ('cp "' + (Join-Path $toolsDir "setup_sshd.sh") + '" ~/setup_sshd.sh && sh ~/setup_sshd.sh && rm ~/setup_sshd.sh')
+
+    # Open firewall port
+    Write-Host "Opening firewall for SSHd access"
+    netsh advfirewall firewall add rule name='MSYS2 SSHd' dir=in action=allow protocol=TCP localport=$SSH_PORT
+}
+
+if ($getSource -eq $true) {
+    Write-Host "Getting a checkout of GHC for your coding pleasure..."
+
+    execute "Fetching sources..." `
+            "git clone --recursive git://git.haskell.org/ghc.git" 
+
+    if ($useArc -eq $true) {
+        execute "Initializing arc..."
+                "cd ghc && arc install-certificate"
+    }
+}
+
+if ($useHadrian -eq $true) {
+    Write-Host "Setting up Hadrian as requested."
+
+    execute "Fetching sources..." `
+            "cd ghc && git clone git://github.com/snowleopard/hadrian && cabal install"
 }
 
 Write-Host "Preventing Chocolatey shims..."
@@ -210,7 +155,7 @@ Write-Output "*"
 if ($useArc -eq $false) {
     Write-Output "*  For this you do need PHP, PHP can be downloaded from http://windows.php.net/download#php-5.6"
     Write-Output "*  and need to be in your PATH for arc to find it."
-} else {
+} elseif ($getSource -eq $false) {
     Write-Output "*  arc has been installed. Once you check out the ghc code, perform the following commands to finish the install:"
     Write-Output "*  cd ~/code/ghc-head"
     Write-Output "*  arc install-certificate"

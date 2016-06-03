@@ -1,19 +1,26 @@
 ﻿try {
 
-$toolsDir        = Split-Path -parent $MyInvocation.MyCommand.Definition
-$packageFullName = $packageName + '-' + $version
-$packageDir      = Join-Path ".." $toolsDir
-  
-# MSYS2 zips contain a root dir named msys32 or msys64
-$msysName = '.' #shorten the path by exporting to the same folder
-$msysRoot = Join-Path $packageDir $msysName
-$msysBase = Join-Path $msysRoot ("msys" + $osBitness)
+# Include the shared scripts
+$thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+. ($thisScript +  '.\chocolateyShared-Template.ps1')
+
+$SSHServiceInstanceExistsAndIsOurs = ([bool]((Get-WmiObject win32_service | ?{$_.Name -ilike 'sshd'} | select -expand PathName) -ilike "*$msysBase*"))
+
+if ($SSHServiceInstanceExistsAndIsOurs -eq $true) {
+    execute "Removing SSHd..." `
+        ('cp "' + (Join-Path $toolsDir "remove_sshd.sh") + '" ~/remove_sshd.sh && sh ~/remove_sshd.sh && rm ~/remove_sshd.sh')
+
+    # Removing filewall rules
+    netsh advfirewall firewall delete rule name='MSYS2 SSHd'
+}
 
 # Whatever chocolatey is doing during an uninstall is taking too long
 # It's making this uninstall take hours which is unacceptably slow
 # when all we want is to remove the files. So I'm removing the msys2
 # folder manually.
-rm -r -fo $msysBase
+Write-Host "Removing MSYS2 installation..."
+
+Remove-Item -r -fo $msysBase
 
 } catch {
   throw $_.Exception
