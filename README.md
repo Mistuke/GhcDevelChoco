@@ -48,7 +48,7 @@ A full command looks like
 
     choco install -y ghc-devel-{x86|x64} -params "/arc"
 
-To start the package, run `ghc-devel-{x86|x64}.bat`
+To start the package, run `ghc-devel-{x86|x64}.cmd`
 
      Note: Unfortunately because of a how Chocolatey currently works, you will have 
            to restart the console in order for the PATH variables to be correct. 

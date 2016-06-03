@@ -140,7 +140,7 @@ Write-Output "*"
 Write-Output "*  ...And we're done!"
 Write-Output "*"
 Write-Output "*"
-Write-Output ("*  You can run this by running '" + $packageName + ".bat' after restarting powershell")
+Write-Output ("*  You can run this by running '" + $packageName + ".cmd' after restarting powershell")
 Write-Output "*  or by launching the batch file directly."`
 Write-Output "*"
 Write-Output "*  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources"
