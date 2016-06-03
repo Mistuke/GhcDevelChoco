@@ -109,7 +109,7 @@ if ($getSource -eq $true) {
             "git clone --recursive git://git.haskell.org/ghc.git" 
 
     if ($useArc -eq $true) {
-        execute "Initializing arc..."
+        execute "Initializing arc..." `
                 "cd ghc && arc install-certificate"
     }
 }
@@ -141,7 +141,7 @@ Write-Output "*  ...And we're done!"
 Write-Output "*"
 Write-Output "*"
 Write-Output ("*  You can run this by running '" + $packageName + ".cmd' after restarting powershell")
-Write-Output "*  or by launching the batch file directly."`
+Write-Output "*  or by launching the batch file directly."
 Write-Output "*"
 Write-Output "*  For instructions on how to get the sources visit https://ghc.haskell.org/trac/ghc/wiki/Building/GettingTheSources"
 Write-Output "*"
@@ -185,3 +185,4 @@ Write-Output "*"
 Write-Output "*  Happy Hacking!"
 Write-Output "*"
 Write-Output "***********************************************************************************************"
+Write-Output "Waiting for chocolatey to finish..."
