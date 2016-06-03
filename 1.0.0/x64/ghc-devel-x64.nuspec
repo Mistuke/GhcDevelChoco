@@ -3,7 +3,7 @@
     <metadata>
         <id>ghc-devel-x64</id>
         <version>1.0.0</version>
-        <title>GHC 64bit development environment</title>
+        <title>GHC 64-bit development environment</title>
         <authors>Tamar Christina</authors>
         <owners>Tamar Christina</owners>
         <licenseUrl>https://github.com/Mistuke/GhcDevelChoco/blob/master/LICENSE</licenseUrl>
@@ -11,7 +11,20 @@
         <iconUrl>http://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Haskell-Logo.svg/2000px-Haskell-Logo.svg.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>This package installs and initializes an msys2 environment that has all the required features and tools to setup a
-        ghc development on Windows.</description>
+        ghc development on Windows.
+
+        ### Package Specifics
+        The package only installs the 64-bit version of the development environment. This package also does not support upgrading in place.
+        If you install a newer version of the package it will wipe your environment.
+
+        #### Package Parameters
+        The following package parameters can be set:
+
+         * `/arc` - this will configure the phabricator tool `arc` for use. This is not done by default.
+         * `/ssh` - this installs and configures an ssh server for use with this environment, this services will be started automatically by windows. This is not enabled by default.
+
+        These parameters can be passed to the installer with the use of `-params`.
+        For example: `-params '"/arc /ssh"'`.</description>
         <summary>Chocolatey sources for quick and easy setup of a GHC development environment required to build on Windows.</summary>
         <releaseNotes>https://github.com/Mistuke/GhcDevelChoco/blob/master/README.md</releaseNotes>
         <copyright>Copyright (c) 2016, Tamar Christina</copyright>
