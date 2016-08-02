@@ -8,12 +8,12 @@ $ErrorActionPreference = 'Stop';
  
 $packageName = 'ghc-devel-' + $arch
  
-$toolsDir        = Split-Path -parent $MyInvocation.MyCommand.Definition
+$toolsDir        = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $packageDir      = Join-Path $toolsDir ".."
 $packageFullName = $packageName + '-' + $version
 
 # Include the Chocolatey compatibility scripts if available
-$thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+$thisScript = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $compatScript = $thisScript +  '.\chocolateyShared-Template.ps1'
 if (Test-Path $compatScript) {
     . ($compatScript)

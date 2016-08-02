@@ -5,7 +5,7 @@
 # Copyright (C) 2016 Tamar Christina <tamar@zhox.com>
 
 # Include the shared scripts
-$thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+$thisScript = Split-Path -Parent $MyInvocation.MyCommand.Definition
 . ($thisScript +  '.\chocolateyShared-Template.ps1')
 
 if ($arch -eq 'x86') {

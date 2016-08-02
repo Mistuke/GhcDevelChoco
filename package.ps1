@@ -1,6 +1,6 @@
 Add-Type -assembly "system.io.compression.filesystem"
 
-$path      = Split-Path $MyInvocation.MyCommand.Path -Parent
+$path      = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $bin       = Join-Path $path "bin"
 $templates = Join-Path $path "templates"
 $compat    = Join-Path $path "compat"

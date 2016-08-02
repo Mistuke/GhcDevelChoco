@@ -1,5 +1,5 @@
 ﻿# Include the shared scripts
-$thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+$thisScript = Split-Path -Parent $MyInvocation.MyCommand.Definition
 . ($thisScript +  '.\chocolateyShared-Template.ps1')
 
 Write-Host "Checking if we installed an SSHd service"
