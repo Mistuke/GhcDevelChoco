@@ -14,6 +14,25 @@
 # https://github.com/chocolatey/chocolatey/blob/master/LICENSE
 # LICENSE.CHOCOLATEY included in this folder
 
+# First lets override some variables
+if ($args.length -eq 0 -or $args[0].StartsWith("/")) {
+    $usrPath       = Read-Host -Prompt 'Install to:'
+    $toolsDir      = Join-Path $usrPath "pkg"
+    $start         = 0
+} else {
+    $toolsDir      = Join-Path $args[0] "pkg"
+    $start         = 1
+}
+$packageDir        = Join-Path $toolsDir ".."
+$packageParameters = ""
+
+# Build the commandline argument
+for ($i=$start; $i -lt $args.length; $i++)
+{
+    $packageParameters=$packageParameters + ' ' + $args[$i]
+}
+# Shim functions
+
 function Get-ChocolateyUnzip {
 param(
   [string] $fileFullPath,
