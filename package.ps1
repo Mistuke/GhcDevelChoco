@@ -20,6 +20,11 @@ ls ghc-devel*.nuspec -recurse -File | ForEach-Object {
 
             Remove-Item -Path $tmp -Include *.nuspec
 
+            # Move top scripts
+            $tools = Join-Path $tmp "tools"
+            Move-Item (Join-Path $tools "chocolateyInstall.ps1") (Join-Path $tmp "Install.ps1")
+            Move-Item (Join-Path $tools "chocolateyUninstall.ps1") (Join-Path $tmp "Uninstall.ps1")
+
             $source = $tmp
             $destination = Join-Path $bin ($base + '.zip')
 
