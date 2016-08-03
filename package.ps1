@@ -18,7 +18,7 @@ ls ghc-devel*.nuspec -recurse -File | ForEach-Object {
             Copy-Item -Recurse -Force -Path (Join-Path $templates "*") -Destination $tmp
             Copy-Item -Recurse -Force -Path (Join-Path $compat "*") -Destination $tmp
 
-            Remove-Item -Path $tmp -Include *.nuspec
+            Remove-Item (Join-Path $tmp "*.nuspec")
 
             # Move top scripts
             $tools = Join-Path $tmp "tools"

@@ -15,21 +15,25 @@
 # LICENSE.CHOCOLATEY included in this folder
 
 # First lets override some variables
-if ($args.length -eq 0 -or $args[0].StartsWith("/")) {
-    $usrPath       = Read-Host -Prompt 'Install to:'
+if ($argsList.length -eq 0 -or $argsList[0].StartsWith("/")) {
+    $usrPath       = Read-Host -Prompt 'Install to'
     $toolsDir      = Join-Path $usrPath "pkg"
     $start         = 0
 } else {
-    $toolsDir      = Join-Path $args[0] "pkg"
+    $toolsDir      = Join-Path $argsList[0] "pkg"
     $start         = 1
 }
 $packageDir        = Join-Path $toolsDir ".."
 $packageParameters = ""
 
+# Copy some tools over
+if (![System.IO.Directory]::Exists($toolsDir)) {[System.IO.Directory]::CreateDirectory($toolsDir)}
+Copy-Item -Recurse -Force -Path (Join-Path $thisScript "*") -Exclude *.ps1, LICENSE* -Destination $toolsDir  
+
 # Build the commandline argument
-for ($i=$start; $i -lt $args.length; $i++)
+for ($i=$start; $i -lt $argsList.length; $i++)
 {
-    $packageParameters=$packageParameters + ' ' + $args[$i]
+    $packageParameters=$packageParameters + ' ' + $argsList[$i]
 }
 # Shim functions
 
@@ -47,22 +51,13 @@ param(
 
   Write-Debug "Running 'Get-ChocolateyUnzip' with fileFullPath:`'$fileFullPath`'', destination: `'$destination`', specificFolder: `'$specificFolder``, packageName: `'$packageName`'";
 
-  if ($packageName) {
-    $packagelibPath=$env:chocolateyPackageFolder
-    if (!(Test-Path -path $packagelibPath)) {
-      New-Item $packagelibPath -type directory
-    }
-
-    $zipFilename=split-path $zipfileFullPath -Leaf
-    $zipExtractLogFullPath=join-path $packagelibPath $zipFilename`.txt
-  }
-
   Write-Host "Extracting $fileFullPath to $destination..."
   if (![System.IO.Directory]::Exists($destination)) {[System.IO.Directory]::CreateDirectory($destination)}
   
   # 7zip will be in the same folder as this script.
-  $thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
-  $7zip = Join-Path "$thisScript" 'tools\7za.exe'
+  $7zip = Join-Path "$thisScript" (Join-Path "tools" "7za.exe")
+  
+  Write-Host "Using `'$7zip`'..."
 
   $exitCode = -1
   $unzipOps = {
@@ -73,6 +68,8 @@ param(
 
     $exitCodeRef.Value = $process.ExitCode
   }
+  
+  Invoke-Command $unzipOps -ArgumentList $7zip,$destination,$fileFullPath,([ref]$exitCode)
 
   Write-Debug "7za exit code: $exitCode"
   switch ($exitCode) {
@@ -102,22 +99,28 @@ param(
 )
   Write-Debug "Running 'Install-ChocolateyZipPackage' for $packageName with url:`'$url`', unzipLocation: `'$unzipLocation`', url64bit: `'$url64bit`', specificFolder: `'$specificFolder`', checksum: `'$checksum`', checksumType: `'$checksumType`', checksum64: `'$checksum64`', checksumType64: `'$checksumType64`' ";
 
+  Write-Host "Downloading from `'$url`'..."
+  
   try {
     $fileType = 'zip'
 
-    $chocTempDir = Join-Path $env:TEMP "chocolatey"
-    $tempDir = Join-Path $chocTempDir "$packageName"
+    $tempDir = Join-Path $env:TEMP "$packageName"
     if (![System.IO.Directory]::Exists($tempDir)) {[System.IO.Directory]::CreateDirectory($tempDir) | Out-Null}
     $file = Join-Path $tempDir "$($packageName)Install.$fileType"
 
     # Use the .NET WebClient and just download it all.
     $webclient = New-Object System.Net.WebClient
     $webclient.DownloadFile($url,$file)
+    
+    Write-Host "Download finished"
 
-    Get-ChocolateyUnzip "$file" $unzipLocation $specificFolder $packageName
+    Get-ChocolateyUnzip $file $unzipLocation $specificFolder $packageName
+    
+    Remove-Item -Force $file
 
   } catch {
-    Write-Host $($_.Exception.Message)
+    Write-Error $($_.Exception.Message)
+    Remove-Item -Force $file
     throw
   }
 }
@@ -134,27 +137,10 @@ param(
   $envPath = $env:PATH
   if (!$envPath.ToLower().Contains($pathToInstall.ToLower()))
   {
-    Write-Host "PATH environment variable does not have $pathToInstall in it. Adding..."
-    $actualPath = Get-EnvironmentVariable -Name 'Path' -Scope $pathType
-
-    $statementTerminator = ";"
-    #does the path end in ';'?
-    $hasStatementTerminator = $actualPath -ne $null -and $actualPath.EndsWith($statementTerminator)
-    # if the last digit is not ;, then we are adding it
-    If (!$hasStatementTerminator -and $actualPath -ne $null) {$pathToInstall = $statementTerminator + $pathToInstall}
-    if (!$pathToInstall.EndsWith($statementTerminator)) {$pathToInstall = $pathToInstall + $statementTerminator}
-    $actualPath = $actualPath + $pathToInstall
-
-    if ($pathType -eq [System.EnvironmentVariableTarget]::Machine) {
-      if (Test-ProcessAdminRights) {
-        Set-EnvironmentVariable -Name 'Path' -Value $actualPath -Scope $pathType
-      } else {
-        Write-Error "Sorry, we can't set the Machine ENV Variable for you without being admin."
-        Write-Error "Add `$pathToInstall' to your path manually if you wish."
-      }
-    } else {
-      Set-EnvironmentVariable -Name 'Path' -Value $actualPath -Scope $pathType
-    }
+    Write-Host "PATH environment variable does not have $pathToInstall in it. However,"
+    Write-Error "I can't modify it automatically for you because my creator hasn't written"
+    Write-Error "The code to do so :( ."
+    Write-Error "Add `'$pathToInstall`' to your path manually if you wish."
 
     #add it to the local path as well so users will be off and running
     $envPSPath = $env:PATH

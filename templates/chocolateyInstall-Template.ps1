@@ -78,7 +78,7 @@ if ($useArc -eq $true) {
     Write-Host "Setting up Arcanist as requested."
 
     execute "Installing php" `
-            'mkdir -p /usr/local/bin && curl --stderr - -LO http://windows.php.net/downloads/releases/php-5.6.22-Win32-VC11-x86.zip && unzip php-5.6.22-Win32-VC11-x86.zip -d /usr/local/bin && rm -f php-5.6.22-Win32-VC11-x86.zip'
+            'mkdir -p /usr/local/bin && curl --stderr - -LO http://windows.php.net/downloads/releases/archives/php-5.6.23-Win32-VC11-x86.zip && unzip php-5.6.23-Win32-VC11-x86.zip -d /usr/local/bin && rm -f php-5.6.23-Win32-VC11-x86.zip'
 
     execute "Cloning arcanist" `
             "git clone https://github.com/phacility/libphutil.git && git clone https://github.com/phacility/arcanist.git"

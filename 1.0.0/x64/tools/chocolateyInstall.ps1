@@ -1,6 +1,7 @@
-﻿#NOTE: Please remove any commented lines to tidy up prior to releasing the package, including this one
+﻿$arch = 'x64'
 
-$arch = 'x64'
+# save argument list for possible later consumption
+$argsList = $args
 
 $thisScript = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 . ($thisScript +  '.\chocolateyInstall-Template.ps1')

@@ -14,7 +14,7 @@ $packageFullName = $packageName + '-' + $version
 
 # Include the Chocolatey compatibility scripts if available
 $thisScript = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$compatScript = $thisScript +  '.\chocolateyShared-Template.ps1'
+$compatScript = $thisScript +  '.\ChocolateyCompat.ps1'
 if (Test-Path $compatScript) {
     . ($compatScript)
 }
