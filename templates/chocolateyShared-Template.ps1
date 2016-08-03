@@ -39,7 +39,10 @@ $arguments = @{}
 # /arc /ssh /source /hadrian /all
 
 # Now we can use the $env:chocolateyPackageParameters inside the Chocolatey package
-$packageParameters = $env:chocolateyPackageParameters
+if ([string]::IsNullOrWhiteSpace($packageParameters))
+{
+    $packageParameters = $env:chocolateyPackageParameters
+}
 
 # Default the values
 $useArc     = $true
@@ -85,7 +88,7 @@ if ($packageParameters) {
   }
   
   if ($arguments.ContainsKey("hadrian")) {
-      Write-Host "Okay, I will also install and configure a Hadrian daemon"
+      Write-Host "Okay, I will also install and configure Hadrian"
       $useHadrian = $true
       $getSource  = $true
   }
