@@ -39,6 +39,9 @@ execute "Processing MSYS2 bash for first time use" `
 
 execute "Appending profile with path information" `
         ('echo "export PATH=/mingw' + $osBitness + '/bin:\$PATH" >>~/.bash_profile')
+        
+execute "Setting default MSYSTEM" `
+        'echo "export MSYSTEM=MSYS64" >>~/.bash_profile'
 
 # Now perform commands to set up MSYS2 for GHC Developments
 execute "Updating system packages" `
