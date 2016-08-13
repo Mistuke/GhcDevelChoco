@@ -37,4 +37,4 @@ ls ghc-devel*.nuspec -recurse -File | ForEach-Object {
         
 cd $path
 
-Write-Host "Done."
+Write-Host "Finished."

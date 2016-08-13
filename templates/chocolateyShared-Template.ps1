@@ -120,13 +120,32 @@ function execute {
          , [bool] $ignoreExitCode = $false
          )
     
+    $appdata = "export APPDATA=""" + $Env:AppData + """ && "
+    
     # NOTE: For now, we have to redirect or silence stderr due to
     # https://github.com/chocolatey/choco/issues/445 
     # Instead just check the exit code
-    Write-Host "$message with '$command'..."    
-    $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$command'" -RedirectStandardError nul -PassThru
+    Write-Host "$message with '$command'..."
+    if ($compat -eq 1)
+    {
+        $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -PassThru
+    } else {
+        $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -RedirectStandardError nul -PassThru
+    }
+
     if ((-not $ignoreExitCode) -and ($proc.ExitCode -ne 0)) {
-        throw ("Command '$command' did not complete successfully. ExitCode: " + $proc.ExitCode)
+        # Retry the command, maybe something was up
+        if ($compat -eq 1)
+        {
+            $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -PassThru
+        } else {
+            $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -RedirectStandardError nul -PassThru
+        }
+
+        if ((-not $ignoreExitCode) -and ($proc.ExitCode -ne 0)) {
+            # Tried twice, just fail.
+            throw ("Command `'$command`' did not complete successfully. ExitCode: " + $proc.ExitCode)
+        }
     }
 }
 

@@ -100,7 +100,7 @@ if ($getSource -eq $true) {
     # Configure Arcanist if it was installed
     if ($useArc -eq $true) {
         execute "Initializing arc..." `
-                "cd ghc && arc install-certificate"
+                "cd ghc && arc set-config default https://phabricator.haskell.org/ && arc install-certificate"
     }
 }
 
@@ -109,7 +109,7 @@ if ($useHadrian -eq $true) {
     Write-Host "Setting up Hadrian as requested."
 
     execute "Fetching sources..." `
-            "cd ghc && git clone git://github.com/snowleopard/hadrian && cd hadrian && cabal install --dependencies-only"
+            "cd ghc && git clone git://github.com/snowleopard/hadrian && cd hadrian"
 }
 
 # Install SSHd 

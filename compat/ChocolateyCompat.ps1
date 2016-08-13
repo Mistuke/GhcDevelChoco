@@ -25,6 +25,7 @@ if ($argsList.length -eq 0 -or $argsList[0].StartsWith("/")) {
 }
 $packageDir        = Join-Path $toolsDir ".."
 $packageParameters = ""
+$compat            = 1
 
 # Copy some tools over
 if (![System.IO.Directory]::Exists($toolsDir)) {[System.IO.Directory]::CreateDirectory($toolsDir)}
@@ -138,9 +139,9 @@ param(
   if (!$envPath.ToLower().Contains($pathToInstall.ToLower()))
   {
     Write-Host "PATH environment variable does not have $pathToInstall in it. However,"
-    Write-Error "I can't modify it automatically for you because my creator hasn't written"
-    Write-Error "The code to do so :( ."
-    Write-Error "Add `'$pathToInstall`' to your path manually if you wish."
+    Write-Host "I can't modify it automatically for you because my creator hasn't written"
+    Write-Host "The code to do so :( ."
+    Write-Host "Add `'$pathToInstall`' to your path manually if you wish."
 
     #add it to the local path as well so users will be off and running
     $envPSPath = $env:PATH
