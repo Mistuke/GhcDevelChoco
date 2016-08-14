@@ -119,8 +119,9 @@ function execute {
          , [string] $command
          , [bool] $ignoreExitCode = $false
          )
-    
-    $appdata = "export APPDATA=""" + $Env:AppData + """ && "
+    # Set the APPDATA path which does not get inherited during these invokes
+    # and set MSYSTEM to make sure we're using the right system
+    $envdata = "export APPDATA=""" + $Env:AppData + """ && export MSYSTEM=MINGW" + $osBitness + " && "
     
     # NOTE: For now, we have to redirect or silence stderr due to
     # https://github.com/chocolatey/choco/issues/445 
@@ -128,18 +129,18 @@ function execute {
     Write-Host "$message with '$command'..."
     if ($compat -eq 1)
     {
-        $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -PassThru
+        $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$envdata $command'" -PassThru
     } else {
-        $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -RedirectStandardError nul -PassThru
+        $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$envdata $command'" -RedirectStandardError nul -PassThru
     }
 
     if ((-not $ignoreExitCode) -and ($proc.ExitCode -ne 0)) {
         # Retry the command, maybe something was up
         if ($compat -eq 1)
         {
-            $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -PassThru
+            $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$envdata $command'" -PassThru
         } else {
-            $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$appdata $command'" -RedirectStandardError nul -PassThru
+            $proc = Start-Process -NoNewWindow -UseNewEnvironment -Wait $msysBashShell -ArgumentList '--login', '-c', "'$envdata $command'" -RedirectStandardError nul -PassThru
         }
 
         if ((-not $ignoreExitCode) -and ($proc.ExitCode -ne 0)) {
