@@ -1,6 +1,31 @@
 # GhcDevelChoco
 Chocolatey sources for quick and easy setup of a GHC development environment on Windows.
 
+This package has two modes of operation, one that uses Chocolatey as its backing and one
+that uses self contained powershell package as it's base.
+
+To build the chocolatey package run `.\build-chocolatey-packages.ps1` and to build the
+standalone package run `.\build-standalone-packages.ps1`. The results will be placed in the
+newly created `bin` folder.
+
+## Standalone Install instructions
+
+To use the standalone package, unzip the version you want to use and call `./Install.ps1 <location> <options>`
+
+E.g. 
+    ./Install.ps1 C:\ghc-dev\ /source /arc /hadrian
+
+See below for a description of the arguments. 
+
+    NOTE: *This release has a noted limitation. If you install the SSH deamon (which requires you to run the
+          install script using an elevated powershell console!) then you need to manually run `remove_sshd.sh`
+          before calling `./Remove.ps1` because the ssh deamon is not properly being detected in this version.*
+          
+          If you forget, you can manually execute the instructions in `remove_sshd.sh` later (using sc.exe to unregister
+          the service).
+
+## Chocolatey Install instructions
+
 This repository contains the sources for the GHC Development Chocolatey packages.
 
 To use these get Chocolatey https://chocolatey.org/
