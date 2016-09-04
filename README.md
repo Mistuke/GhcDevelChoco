@@ -12,7 +12,8 @@ newly created `bin` folder.
 
 To use the standalone package, unzip the version you want to use and call `./Install.ps1 <location> <options>`
 
-E.g. 
+E.g.
+
     ./Install.ps1 C:\ghc-dev\ /source /arc /hadrian
 
 See below for a description of the arguments. 
