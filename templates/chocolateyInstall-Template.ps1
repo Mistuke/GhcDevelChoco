@@ -41,7 +41,7 @@ execute "Appending profile with path information" `
         ('echo "export PATH=/mingw' + $osBitness + '/bin:\$PATH" >>~/.bash_profile')
         
 execute "Setting default MSYSTEM" `
-        ('echo "export MSYSTEM="' + ("MINGW" + $osBitness) + '" >>~/.bash_profile')
+        ('echo "export MSYSTEM=' + ("MINGW" + $osBitness) + '" >>~/.bash_profile')
 
 # Now perform commands to set up MSYS2 for GHC Developments
 execute "Updating system packages" `
