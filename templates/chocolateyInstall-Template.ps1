@@ -68,6 +68,13 @@ execute "Installing alex, happy and cabal" `
 execute "Re-installing HsColour" `
         'cabal install -j --prefix=/usr/local HsColour --reinstall'
 
+# Install some sphinx dependencies
+execute "Installing python3 pip" `
+        'pacman -S --needed --noconfirm mingw-w64-$(uname -m)-python3-pip'
+
+execute "Installing python3 request package" `
+        'pip3 install requests'
+
 # Create files to access msys
 Write-Host "Creating msys2 wrapper..."
 $cmd = "@echo off`r`npushd %~dp0`r`n$msysShell -mingw" + $osBitness
@@ -112,7 +119,7 @@ if ($useHadrian -eq $true) {
     Write-Host "Setting up Hadrian as requested."
 
     execute "Fetching sources..." `
-            "cd ghc && git clone git://github.com/snowleopard/hadrian && cd hadrian"
+            "cd ghc && git clone https://github.com/snowleopard/hadrian.git && cd hadrian"
 }
 
 # Install SSHd 
