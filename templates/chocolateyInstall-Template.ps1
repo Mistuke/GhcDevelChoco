@@ -60,7 +60,7 @@ execute "Ensuring /mingw folder exists" `
         ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
 
 execute "Installing bootstrapping GHC 7.10.3 version" `
-        ('curl --stderr - -LO https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz && tar -xJ -C /mingw' + $osBitness + ' --strip-components=1 -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz && rm -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz')
+        ('curl --stderr - -LO https://www.haskell.org/ghc/dist/7.10.3/ghc-7.10.3-' + $ghcArch + '-unknown-mingw32-win10.tar.xz && tar -xJ -C /mingw' + $osBitness + ' --strip-components=1 -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz && rm -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32.tar.xz')
 
 execute "Installing alex, happy and cabal" `
         ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
