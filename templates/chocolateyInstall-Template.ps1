@@ -44,23 +44,32 @@ execute "Setting default MSYSTEM" `
         ('echo "export MSYSTEM=' + ("MINGW" + $osBitness) + '" >>~/.bash_profile')
 
 # Now perform commands to set up MSYS2 for GHC Developments
+execute "Update pacman package DB" `
+        "pacman -Syy"
+
 execute "Updating system packages" `
         "pacman --noconfirm --needed -Sy bash pacman pacman-mirrors msys2-runtime"
 rebase
 execute "Upgrading full system" `
         "pacman --noconfirm -Su"
+
+# It seems some parts of the system have to be update for others to be updateable. So just run this twice.
+execute "Upgrading full system twice" `
+        "pacman --noconfirm -Su"
+
 rebase
 execute "Installing GHC Build Dependencies" `
         "pacman --noconfirm -S --needed git tar binutils autoconf make libtool automake python python2 p7zip patch unzip mingw-w64-`$(uname -m)-gcc mingw-w64-`$(uname -m)-gdb mingw-w64-`$(uname -m)-python3-sphinx"
 
+#Force reinstall in order to install ca-certificates with the updated pk11 tools
 execute "Updating SSL root certificate authorities" `
-        "pacman --noconfirm -S --needed ca-certificates"
+        "pacman --noconfirm -S ca-certificates"
 
 execute "Ensuring /mingw folder exists" `
         ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
 
-execute "Installing bootstrapping GHC 7.10.3 version" `
-        ('curl --stderr - -LO https://downloads.haskell.org/~ghc/8.0.2/ghc-8.0.2-' + $ghcArch + '-unknown-mingw32-win10.tar.xz && tar -xJ -C /mingw' + $osBitness + ' --strip-components=1 -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32-win10.tar.xz && rm -f ghc-7.10.3-' + $ghcArch + '-unknown-mingw32-win10.tar.xz')
+execute "Installing bootstrapping GHC 8.0.2 version" `
+        ('curl --stderr - -LO https://downloads.haskell.org/~ghc/8.0.2/ghc-8.0.2-' + $ghcArch + '-unknown-mingw32-win10.tar.xz && tar -xJ -C /mingw' + $osBitness + ' --strip-components=1 -f ghc-8.0.2-' + $ghcArch + '-unknown-mingw32-win10.tar.xz && rm -f ghc-8.0.2-' + $ghcArch + '-unknown-mingw32-win10.tar.xz')
 
 execute "Installing alex, happy and cabal" `
         ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
@@ -68,12 +77,6 @@ execute "Installing alex, happy and cabal" `
 execute "Re-installing HsColour" `
         'cabal install -j --prefix=/usr/local HsColour --reinstall'
 
-# Install some sphinx dependencies
-execute "Installing python3 pip" `
-        'pacman -S --needed --noconfirm mingw-w64-$(uname -m)-python3-pip'
-
-execute "Installing python3 request package" `
-        'pip3 install requests'
 
 # Create files to access msys
 Write-Host "Creating msys2 wrapper..."
