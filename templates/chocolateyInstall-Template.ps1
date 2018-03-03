@@ -1,7 +1,7 @@
 ﻿# Chocolatey GHC Dev
 #
 # Licensed under the MIT License
-# 
+#
 # Copyright (C) 2016 Tamar Christina <tamar@zhox.com>
 
 # Include the shared scripts
@@ -18,11 +18,11 @@ if ($arch -eq 'x86') {
     $checksumType  = 'SHA1'
 }
 
-# Continue with package 
+# Continue with package
 Write-Host "Installing to '$packageDir'"
 Install-ChocolateyZipPackage $packageName $url $packageDir `
   -checksum $checksum -checksumType $checksumType
-  
+
 # check if .tar.xz was only unzipped to tar file
 # (shall work better with newer choco versions)
 $tarFile = Join-Path $packageDir ($packageName + 'Install')
@@ -39,13 +39,16 @@ execute "Processing MSYS2 bash for first time use" `
 
 execute "Appending profile with path information" `
         ('echo "export PATH=/mingw' + $osBitness + '/bin:\$PATH" >>~/.bash_profile')
-        
+
 execute "Setting default MSYSTEM" `
         ('echo "export MSYSTEM=' + ("MINGW" + $osBitness) + '" >>~/.bash_profile')
 
 # Now perform commands to set up MSYS2 for GHC Developments
 execute "Update pacman package DB" `
         "pacman -Syy"
+# Workaround for a stupid msys2 cycle they introduced
+execute "Removing catgets libcatgets" `
+         "pacman --noconfirm -R catgets libcatgets"
 
 execute "Updating system packages" `
         "pacman --noconfirm --needed -Sy bash pacman pacman-mirrors msys2-runtime"
@@ -68,11 +71,11 @@ execute "Updating SSL root certificate authorities" `
 execute "Ensuring /mingw folder exists" `
         ('test -d /mingw' + $osBitness + ' || mkdir /mingw' + $osBitness)
 
-execute "Installing bootstrapping GHC 8.0.2 version" `
-        ('curl --stderr - -LO https://downloads.haskell.org/~ghc/8.0.2/ghc-8.0.2-' + $ghcArch + '-unknown-mingw32-win10.tar.xz && tar -xJ -C /mingw' + $osBitness + ' --strip-components=1 -f ghc-8.0.2-' + $ghcArch + '-unknown-mingw32-win10.tar.xz && rm -f ghc-8.0.2-' + $ghcArch + '-unknown-mingw32-win10.tar.xz')
+execute "Installing bootstrapping GHC 8.2.2 version" `
+        ('curl --stderr - -LO https://downloads.haskell.org/~ghc/8.2.2/ghc-8.2.2-' + $ghcArch + '-unknown-mingw32.tar.xz && tar -xJ -C /mingw' + $osBitness + ' --strip-components=1 -f ghc-8.2.2-' + $ghcArch + '-unknown-mingw32.tar.xz && rm -f ghc-8.2.2-' + $ghcArch + '-unknown-mingw32.tar.xz')
 
 execute "Installing alex, happy and cabal" `
-        ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-1.24.0.0/cabal-install-1.24.0.0-i386-unknown-mingw32.zip && unzip cabal-install-1.24.0.0-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-1.24.0.0-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
+        ('mkdir -p /usr/local/bin && curl --stderr - -LO https://www.haskell.org/cabal/release/cabal-install-2.0.0.1/cabal-install-2.0.0.1-i386-unknown-mingw32.zip && unzip cabal-install-2.0.0.1-i386-unknown-mingw32.zip -d /usr/local/bin && rm -f cabal-install-2.0.0.1-i386-unknown-mingw32.zip && cabal update && cabal install -j --prefix=/usr/local alex happy')
 
 execute "Re-installing HsColour" `
         'cabal install -j --prefix=/usr/local HsColour --reinstall'
@@ -86,7 +89,7 @@ echo "$cmd" | Out-File -Encoding ascii (Join-Path $packageDir ($packageName + ".
 execute "Copying GHC gdb configuration..." `
         ('cp "' + (Join-Path $toolsDir ".gdbinit") + '" ~/.gdbinit')
 
-# Install Arcanist   
+# Install Arcanist
 if ($useArc -eq $true) {
     Write-Host "Setting up Arcanist as requested."
 
@@ -98,7 +101,7 @@ if ($useArc -eq $true) {
 
     execute "Adding arcanist to path information" `
             'echo "export PATH=$(pwd)/arcanist/bin:\$PATH" >>~/.bash_profile'
-            
+
     execute "Copying PHP configuration..." `
             ('cp "' + (Join-Path $toolsDir "php.ini") + '" /usr/local/bin/php.ini')
 }
@@ -108,7 +111,7 @@ if ($getSource -eq $true) {
     Write-Host "Getting a checkout of GHC for your coding pleasure..."
 
     execute "Fetching sources..." `
-            "git clone --recursive git://git.haskell.org/ghc.git" 
+            "git clone --recursive git://git.haskell.org/ghc.git"
 
     # Configure Arcanist if it was installed
     if ($useArc -eq $true) {
@@ -117,15 +120,7 @@ if ($getSource -eq $true) {
     }
 }
 
-# Install Hadrian
-if ($useHadrian -eq $true) {
-    Write-Host "Setting up Hadrian as requested."
-
-    execute "Fetching sources..." `
-            "cd ghc && git clone https://github.com/snowleopard/hadrian.git && cd hadrian"
-}
-
-# Install SSHd 
+# Install SSHd
 if ($useSsh -eq $true) {
     Write-Host "Setting up SSH as requested."
 
@@ -191,12 +186,11 @@ if ($getSource -eq $true) {
     Write-Output "*  A checkout of the GHC sources has been made in ~/ghc."
     Write-Output "*"
 }
-if ($useHadrian -eq $true) {
-    Write-Output "*  Hadrian has been installed and configured in ~/ghc."
-    Write-Output "*  This means you can now use shake to build GHC."
-    Write-Output "*  See https://github.com/snowleopard/hadrian for instructions."
-    Write-Output "*"
-}
+
+Write-Output "*  Hadrian has been installed and configured in ~/ghc."
+Write-Output "*  This means you can now use shake to build GHC."
+Write-Output "*  See https://github.com/snowleopard/hadrian for instructions."
+Write-Output "*"
 
 Write-Output "*  For other information visit https://ghc.haskell.org/trac/ghc/wiki/Building"
 Write-Output "*"

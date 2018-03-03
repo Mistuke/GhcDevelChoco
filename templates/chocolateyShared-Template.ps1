@@ -1,13 +1,13 @@
 ﻿# Chocolatey GHC Dev
 #
 # Licensed under the MIT License
-# 
+#
 # Copyright (C) 2016 Tamar Christina <tamar@zhox.com>
- 
+
 $ErrorActionPreference = 'Stop';
- 
+
 $packageName = 'ghc-devel-' + $arch
- 
+
 $toolsDir        = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $packageDir      = Join-Path $toolsDir ".."
 $packageFullName = $packageName + '-' + $version
@@ -48,7 +48,6 @@ if ([string]::IsNullOrWhiteSpace($packageParameters))
 $useArc     = $true
 $useSsh     = $false
 $getSource  = $false
-$useHadrian = $false
 $SSH_PORT   = 22
 
 # Now parse the packageParameters using good old regular expression
@@ -82,27 +81,20 @@ if ($packageParameters) {
       if ($arguments["ssh"] -gt 0) {
         $SSH_PORT=[convert]::ToInt32($arguments["ssh"], 10)
       }
-      
+
       Write-Host ("Okay, I will also install and configure an SSH daemon on port " + $SSH_PORT)
       $useSsh = $true
   }
-  
-  if ($arguments.ContainsKey("hadrian")) {
-      Write-Host "Okay, I will also install and configure Hadrian"
-      $useHadrian = $true
-      $getSource  = $true
-  }
-  
+
   if ($arguments.ContainsKey("source")) {
       Write-Host "Okay, I will also checkout GHC sources in ~/ghc"
       $getSource = $true
   }
-  
+
   if ($arguments.ContainsKey("all")) {
-      Write-Host "Okay, I will install and configure an SSH daemon, Hadrian and Arcanist and get the sources"
+      Write-Host "Okay, I will install and configure an SSH daemon and Arcanist and get the sources"
       $useArc     = $true
       $useSsh     = $true
-      $useHadrian = $true
       $getSource  = $true
   }
 } else {
@@ -122,9 +114,9 @@ function execute {
     # Set the APPDATA path which does not get inherited during these invokes
     # and set MSYSTEM to make sure we're using the right system
     $envdata = "export APPDATA=""" + $Env:AppData + """ && export MSYSTEM=MINGW" + $osBitness + " && "
-    
+
     # NOTE: For now, we have to redirect or silence stderr due to
-    # https://github.com/chocolatey/choco/issues/445 
+    # https://github.com/chocolatey/choco/issues/445
     # Instead just check the exit code
     Write-Host "$message with '$command'..."
     if ($compat -eq 1)
