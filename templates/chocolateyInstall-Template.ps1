@@ -9,12 +9,12 @@ $thisScript = Split-Path -Parent $MyInvocation.MyCommand.Definition
 . ($thisScript +  '.\chocolateyShared-Template.ps1')
 
 if ($arch -eq 'x86') {
-    $url           = 'http://repo.msys2.org/distrib/i686/msys2-base-i686-20161025.tar.xz'
-    $checksum      = '5d17fa53077a93a38a9ac0acb8a03bf6c2fc32ad'
+    $url           = 'http://repo.msys2.org/distrib/i686/msys2-base-i686-20180531.tar.xz'
+    $checksum      = 'c985127122d32e90967d2348fc97e879cba602a9'
     $checksumType  = 'SHA1'
 } else {
-    $url           = 'http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20161025.tar.xz'
-    $checksum      = '05fd74a6c61923837dffe22601c9014f422b5460'
+    $url           = 'http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20180531.tar.xz'
+    $checksum      = '309f604a165179d50fbe4131cf87bd160769f974'
     $checksumType  = 'SHA1'
 }
 
